@@ -2,24 +2,38 @@ import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-    const body = await request.json();
-    const secret = body.secret;
-    const path = body.path;
-
-    // Check if token is correct (security check)
-    if (secret !== process.env.REVALIDATE_TOKEN) {
-        return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
-    }
-
-    if (!path) {
-        return NextResponse.json({ message: 'Path is required' }, { status: 400 });
-    }
-
     try {
-        revalidatePath(path);
+        const body = await request.json();
+        const { secret, path } = body;
 
-        return NextResponse.json({ revalidated: true, now: Date.now() });
-    } catch (err) {
+        // Verify token
+        if (secret !== process.env.REVALIDATE_TOKEN) {
+            console.warn(`[Revalidate] Unauthorized attempt with secret: ${secret}`);
+            return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
+        }
+
+        if (!path) {
+            return NextResponse.json({ message: 'Path is required' }, { status: 400 });
+        }
+
+        // Normalization
+        let cleanPath = path === 'homepage' ? '/' : path;
+        if (!cleanPath.startsWith('/')) {
+            cleanPath = `/${cleanPath}`;
+        }
+
+        console.log(`[Revalidate] Purging cache for: ${cleanPath}`);
+
+        // Do revalidation
+        revalidatePath(cleanPath, 'page');
+
+        return NextResponse.json({ 
+            revalidated: true, 
+            path: cleanPath,
+            now: Date.now() 
+        });
+    } catch (error) {
+        console.error('[Revalidate Error]', error);
         return NextResponse.json({ message: 'Error revalidating' }, { status: 500 });
     }
 }

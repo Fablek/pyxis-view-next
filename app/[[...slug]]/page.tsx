@@ -2,10 +2,6 @@ import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-/**
- * 1. TYPE DEFINITIONS
- * Defines the contract between the Laravel API and the Next.js Frontend.
- */
 interface PageData {
   id: string; // UUID
   title: string;
@@ -18,7 +14,7 @@ interface PageData {
 }
 
 /**
- * 2. DATA ACCESS LAYER
+ * DATA ACCESS LAYER
  * Fetches page data from the Laravel backend based on the URL segments.
  */
 async function getPageData(slugArray: string[] | undefined): Promise<PageData | null> {
@@ -29,7 +25,8 @@ async function getPageData(slugArray: string[] | undefined): Promise<PageData | 
   const previewToken = cookieStore.get('pyxis_preview')?.value;
   
   // Use the Docker service name 'admin' for internal container communication.
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://admin:8000/api';
+  const API_BASE = process.env.INTERNAL_API_URL || 'http://pyxis-admin:8000';
+  const fetchUrl = `${API_BASE}/api/pages/${slug}`;
 
   // Setup headers
   const headers: HeadersInit = { 
@@ -42,14 +39,18 @@ async function getPageData(slugArray: string[] | undefined): Promise<PageData | 
   }
 
   try {
-    const res = await fetch(`${API_URL}/pages/${slug}`, { 
+    const res = await fetch(fetchUrl, { 
       cache: previewToken ? 'no-store' : 'force-cache',
       headers: headers,
+      next: { revalidate: 3600 },
       // Abort the request if the backend takes longer than 5 seconds to respond.
       signal: AbortSignal.timeout(5000) 
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      if (res.status === 404) return null;
+      throw new Error(`Backend returned ${res.status}`);
+    };
 
     const json = await res.json();
 
@@ -62,7 +63,7 @@ async function getPageData(slugArray: string[] | undefined): Promise<PageData | 
 }
 
 /**
- * 3. MAIN PAGE COMPONENT
+ * MAIN PAGE COMPONENT
  * The entry point for all dynamic routes managed by the CMS.
  */
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
