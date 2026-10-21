@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { BlockRenderer } from '@/components/pyxis/BlockRenderer';
-import { fetchPage } from '@/lib/pyxis/api';
+import { BlockRenderer } from '@/lib/pyxis/components/BlockRenderer';
+import { fetchPage } from '@/lib/pyxis/client';
 
 /**
  * Entry point for all pages managed by Pyxis CMS (catch-all route).
