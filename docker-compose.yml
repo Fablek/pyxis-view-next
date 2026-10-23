@@ -10,8 +10,6 @@ services:
     environment:
       - INTERNAL_API_URL=http://pyxis-admin:8000
       - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - REVALIDATE_TOKEN=${REVALIDATE_TOKEN}
-      - LARAVEL_APP_KEY=${LARAVEL_APP_KEY}
     networks:
       - pyxis-network
 

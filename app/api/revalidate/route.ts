@@ -6,9 +6,11 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { secret, path } = body;
 
-        // Verify token
-        if (secret !== process.env.REVALIDATE_TOKEN) {
-            console.warn(`[Revalidate] Unauthorized attempt with secret: ${secret}`);
+        // Verify token – reject everything when no token is configured
+        const expectedToken = process.env.REVALIDATE_TOKEN;
+
+        if (!expectedToken || secret !== expectedToken) {
+            console.warn('[Revalidate] Unauthorized attempt');
             return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
         }
 
