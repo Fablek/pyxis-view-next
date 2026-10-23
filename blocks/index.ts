@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import type { PyxisBlock } from '@/lib/pyxis/types';
 import Test from './Test';
+import Obraz from './Obraz';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type BlockComponent = ComponentType<{ block: PyxisBlock<any> }>;
@@ -15,4 +16,5 @@ export type BlockComponent = ComponentType<{ block: PyxisBlock<any> }>;
  */
 export const blocks: Record<string, BlockComponent> = {
   test: Test,
+  obraz: Obraz,
 };

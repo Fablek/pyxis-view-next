@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         console.log(`[Revalidate] Purging cache for: ${cleanPath}`);
 
         // Do revalidation
-        revalidatePath(cleanPath, 'page');
+        revalidatePath(cleanPath);
 
         return NextResponse.json({ 
             revalidated: true, 
